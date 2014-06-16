@@ -1,0 +1,6 @@
+config BR2_PACKAGE_LIBNFSIDMAP
+	bool "libnfsidmap"
+	help
+	  libnfsidmap is a helper lib for NFSv4 to map IDs
+
+	  http://www.citi.umich.edu/projects/nfsv4/linux/libnfsidmap

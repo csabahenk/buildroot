@@ -13,13 +13,18 @@ NFS_UTILS_DEPENDENCIES = host-pkgconf
 NFS_UTILS_CONF_ENV = knfsd_cv_bsd_signals=no
 
 NFS_UTILS_CONF_OPT = \
-		--disable-nfsv4 \
-		--disable-nfsv41 \
 		--disable-gss \
 		--disable-uuid \
 		--disable-ipv6 \
 		--without-tcp-wrappers \
 		--with-rpcgen=internal
+
+ifeq ($(BR2_PACKAGE_LIBNFSIDMAP),y)
+NFS_UTILS_DEPENDENCIES += libnfsidmap lvm2
+NFS_UTILS_CONF_OPT += --enable-nfsv4 --enable-nfsv41
+else
+NFS_UTILS_CONF_OPT += --disable-nfsv4 --disable-nfsv41
+endif
 
 NFS_UTILS_TARGETS_$(BR2_PACKAGE_NFS_UTILS_RPCDEBUG) += usr/sbin/rpcdebug
 NFS_UTILS_TARGETS_$(BR2_PACKAGE_NFS_UTILS_RPC_LOCKD) += usr/sbin/rpc.lockd
@@ -35,6 +40,8 @@ endif
 define NFS_UTILS_INSTALL_FIXUP
 	$(INSTALL) -m 0755 package/nfs-utils/S60nfs \
 		$(TARGET_DIR)/etc/init.d/S60nfs
+	$(INSTALL) -m 0644 package/nfs-utils/etc-idmapd.conf \
+		$(TARGET_DIR)/etc/idmapd.conf
 	rm -f $(NFS_UTILS_TARGETS_)
 endef
 

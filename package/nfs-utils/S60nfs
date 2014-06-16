@@ -23,9 +23,18 @@ touch /var/lib/nfs/xtab
 
 start() {
 	# Start daemons.
+	echo -n "Starting NFS idmapd: "
+	pipefs_dir="`sed -n 's/^ *Pipefs-Directory *= *//p' /etc/idmapd.conf`"
+	mount | grep -q "on $pipefs_dir type rpc_pipefs"
+	if ! [ $? -eq 0 ]; then
+		mkdir -p "$pipefs_dir"
+		mount -t rpc_pipefs sunrpc "$pipefs_dir"
+	fi
+	rpc.idmapd
+	echo "done"
+
 	echo -n "Starting NFS statd: "
 	rpc.statd
-	touch /var/lock/subsys/nfslock
 	echo "done"
 
 	echo -n "Starting NFS services: "
@@ -40,11 +49,16 @@ start() {
 	echo -n "Starting NFS mountd: "
 	rpc.mountd
 	echo "done"
-	touch /var/lock/subsys/nfs
 }
 
 stop() {
 	# Stop daemons.
+	echo -n "Shutting down NFS idmapd: "
+	pipefs_dir="`sed -n 's/^ *Pipefs-Directory *= *//p' /etc/idmapd.conf`"
+	umount "$pipefs_dir"
+	killall -q rpc.idmapd
+	echo "done"
+
 	echo -n "Shutting down NFS mountd: "
 	killall -q rpc.mountd
 	echo "done"
@@ -55,14 +69,12 @@ stop() {
 
 	echo -n "Shutting down NFS services: "
 	/usr/sbin/exportfs -au
-	rm -f /var/lock/subsys/nfs
 	killall -q rpc.statd
 	echo "done"
 
 	echo -n "Stopping NFS statd: "
 	killall -q rpc.statd
 	echo "done"
-	rm -f /var/lock/subsys/nfslock
 }
 
 # See how we were called.
@@ -79,7 +91,6 @@ case "$1" in
 	;;
   reload)
 	/usr/sbin/exportfs -r
-	touch /var/lock/subsys/nfs
 	;;
   *)
 	echo "Usage: nfs {start|stop|reload}"

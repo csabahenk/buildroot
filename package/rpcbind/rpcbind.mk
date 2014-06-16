@@ -15,4 +15,11 @@ RPCBIND_CONF_ENV += \
 	CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include/tirpc/"
 RPCBIND_DEPENDENCIES += libtirpc
 
+define RPCBIND_INSTALL_FIXUP
+	$(INSTALL) -m 0755 package/rpcbind/S50rpcbind \
+		$(TARGET_DIR)/etc/init.d/S50rpcbind
+endef
+
+RPCBIND_POST_INSTALL_TARGET_HOOKS += RPCBIND_INSTALL_FIXUP
+
 $(eval $(autotools-package))
