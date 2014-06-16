@@ -14,7 +14,7 @@ start() {
 	if [ ! -d /etc/dropbear ] ; then
 		mkdir -p /etc/dropbear
 	fi
-	umask 077
+	umask 022
 	start-stop-daemon -S -q -p /var/run/dropbear.pid \
 		--exec /usr/sbin/dropbear -- $DROPBEAR_ARGS
 	[ $? == 0 ] && echo "OK" || echo "FAIL"
